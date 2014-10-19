@@ -6,7 +6,10 @@ import os
 REGION_KEY = "build_errors"
 REGION_SCOPE = "invalid"
 
-defaultExec = importlib.import_module("Default.exec")
+try:
+    defaultExec = importlib.import_module("Better Build System").BetterBuidSystem
+except:
+    defaultExec = importlib.import_module("Default.exec")
 
 global_errors = {}
 
@@ -42,6 +45,9 @@ class ErrorParser:
 class ExecCommand(defaultExec.ExecCommand):
 
     def on_finished(self, proc):
+
+        super(ExecCommand, self).on_finished(proc)
+
         output = self.output_view.substr(sublime.Region(0, self.output_view.size()))
         error_pattern = self.output_view.settings().get("result_file_regex")
         error_parser = ErrorParser(error_pattern)
