@@ -3,6 +3,8 @@ Highlight Build Errors
 
 A plugin for [Sublime Text 3](http://www.sublimetext.com/) that highlights the lines that caused errors in the build.
 
+![Screen capture with the Monokai theme](http://i.imgur.com/nj4WGFF.png)
+
 ## Feature
 
 * Does only one thing: highlights the erroneous lines after a build
