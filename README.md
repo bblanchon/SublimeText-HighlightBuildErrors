@@ -5,7 +5,7 @@ A plugin for [Sublime Text 3](http://www.sublimetext.com/) that highlights the l
 
 ## Installation
 
-Please install this plugin with the [Sublime Text Package Manager](https://sublime.wbond.net/).
+Install this plugin with the [Sublime Text Package Manager](https://sublime.wbond.net/), then restart Sublime Text.
 
 That's all. There are no settings.
 
@@ -13,4 +13,4 @@ That's all. There are no settings.
 
 Build as usual (Ctrl-B or Cmd-B).
 
-Errorneous lines in the source files will be highlighted.
+Erroneous lines in the source files will be highlighted.
