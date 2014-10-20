@@ -13,13 +13,15 @@ except:
 
 global_errors = {}
 
-def normalize_path(file_path):
-    return os.path.normcase(os.path.abspath(file_path))
+def normalize_path(file_name):
+    return os.path.normcase(os.path.abspath(file_name))
 
 def update_errors_in_view(view):
-    file_name = normalize_path(view.file_name())   
-    regions = [e.get_region(view) for e in global_errors if e.file_name == file_name]
-    view.add_regions(REGION_KEY, regions, REGION_SCOPE)  
+    file_name = view.file_name()
+    if file_name != None:
+        file_name = normalize_path(file_name)   
+        regions = [e.get_region(view) for e in global_errors if e.file_name == file_name]
+        view.add_regions(REGION_KEY, regions, REGION_SCOPE)  
 
 def remove_errors_in_view(view):
     view.erase_regions(REGION_KEY)          
