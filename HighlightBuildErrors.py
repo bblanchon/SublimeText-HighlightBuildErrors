@@ -25,7 +25,10 @@ def remove_errors_in_view(view):
     view.erase_regions(REGION_KEY)          
 
 class ViewEventListener(sublime_plugin.EventListener):
-    def on_activated(self, view):  
+    def on_load(self, view):
+        update_errors_in_view(view)
+
+    def on_activated(self, view): 
         update_errors_in_view(view)
 
 class ErrorLine:
