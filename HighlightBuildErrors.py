@@ -13,8 +13,11 @@ except:
 
 global_errors = {}
 
+def normalize_path(file_path):
+    return os.path.normcase(os.path.abspath(file_path))
+
 def update_errors_in_view(view):
-    file_name = view.file_name()
+    file_name = normalize_path(view.file_name())   
     regions = [e.get_region(view) for e in global_errors if e.file_name == file_name]
     view.add_regions(REGION_KEY, regions, REGION_SCOPE)  
 
@@ -28,7 +31,7 @@ class ViewEventListener(sublime_plugin.EventListener):
 class ErrorLine:
     def __init__(self, matchObject):
         # only keep last line (i've seen a bad regex that capture several lines)
-        self.file_name = os.path.abspath(matchObject.group(1).splitlines()[-1])
+        self.file_name = normalize_path(matchObject.group(1).splitlines()[-1])
         self.line_number = int(matchObject.group(2))
 
     def get_region(self, view):
