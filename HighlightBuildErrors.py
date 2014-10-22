@@ -19,18 +19,18 @@ def normalize_path(file_name):
 def update_errors_in_view(view):
     file_name = view.file_name()
     if file_name != None:
-        file_name = normalize_path(file_name)   
+        file_name = normalize_path(file_name)
         regions = [e.get_region(view) for e in global_errors if e.file_name == file_name]
-        view.add_regions(REGION_KEY, regions, REGION_SCOPE)  
+        view.add_regions(REGION_KEY, regions, REGION_SCOPE)
 
 def remove_errors_in_view(view):
-    view.erase_regions(REGION_KEY)          
+    view.erase_regions(REGION_KEY)
 
 class ViewEventListener(sublime_plugin.EventListener):
     def on_load_async(self, view):
         update_errors_in_view(view)
 
-    def on_activated_async(self, view): 
+    def on_activated_async(self, view):
         update_errors_in_view(view)
 
 class ErrorLine:
@@ -52,9 +52,9 @@ class ErrorParser:
 
 class ExecCommand(defaultExec.ExecCommand):
 
-    def on_finished(self, proc):
+    def finish(self, proc):
 
-        super(ExecCommand, self).on_finished(proc)
+        super(ExecCommand, self).finish(proc)
 
         output = self.output_view.substr(sublime.Region(0, self.output_view.size()))
         error_pattern = self.output_view.settings().get("result_file_regex")
