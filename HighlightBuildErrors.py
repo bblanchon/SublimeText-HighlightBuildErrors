@@ -54,10 +54,10 @@ class ErrorLine:
             return view.full_line(point)
         point = view.text_point(self.line-1, self.column-1)
         point_class = view.classify(point)
-        if point_class & sublime.CLASS_LINE_END:
-            return view.full_line(point)
-        else:
+        if point_class & (sublime.CLASS_WORD_START|sublime.CLASS_WORD_END):
             return view.word(point)
+        else:
+            return view.full_line(point)
 
 class ErrorParser:
     def __init__(self, pattern):
