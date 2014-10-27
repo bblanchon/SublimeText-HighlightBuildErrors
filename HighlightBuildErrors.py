@@ -39,11 +39,11 @@ class ErrorLine:
         self.file_name = normalize_path(matchObject.group(1).splitlines()[-1])
         try:
             self.line = int(matchObject.group(2))
-        except (IndexError, ValueError):
+        except:
             self.line = None
         try:
             self.column = int(matchObject.group(3))
-        except (IndexError, ValueError):
+        except:
             self.column = None
 
     def get_region(self, view):
