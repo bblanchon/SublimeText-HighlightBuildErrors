@@ -52,8 +52,12 @@ class ErrorLine:
         if self.column == None:
             point = view.text_point(self.line-1, 0)
             return view.full_line(point)
-        point = view.text_point(self.line-1, self.column)
-        return view.word(point)
+        point = view.text_point(self.line-1, self.column-1)
+        point_class = view.classify(point)
+        if point_class & sublime.CLASS_LINE_END:
+            return view.full_line(point)
+        else:
+            return view.word(point)
 
 class ErrorParser:
     def __init__(self, pattern):
