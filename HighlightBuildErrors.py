@@ -37,11 +37,23 @@ class ErrorLine:
     def __init__(self, matchObject):
         # only keep last line (i've seen a bad regex that capture several lines)
         self.file_name = normalize_path(matchObject.group(1).splitlines()[-1])
-        self.line_number = int(matchObject.group(2))
+        try:
+            self.line = int(matchObject.group(2))
+        except (IndexError, ValueError):
+            self.line = None
+        try:
+            self.column = int(matchObject.group(3))
+        except (IndexError, ValueError):
+            self.column = None
 
     def get_region(self, view):
-        point = view.text_point(self.line_number-1, 0)
-        return view.full_line(point)
+        if self.line == None:
+            return None;
+        if self.column == None:
+            point = view.text_point(self.line-1, 0)
+            return view.full_line(point)
+        point = view.text_point(self.line-1, self.column)
+        return view.word(point)
 
 class ErrorParser:
     def __init__(self, pattern):

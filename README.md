@@ -22,4 +22,4 @@ That's all. There are no settings.
 
 Build as usual (Ctrl-B or Cmd-B).
 
-Erroneous lines in the source files will be highlighted.
+Erroneous words or lines will be highlighted in the source files.
