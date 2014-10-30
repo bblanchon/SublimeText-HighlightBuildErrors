@@ -11,17 +11,26 @@ try:
 except:
     defaultExec = importlib.import_module("Default.exec")
 
-global_errors = {}
+g_errors = {}
+g_show_errors = True
 
 def normalize_path(file_name):
     return os.path.normcase(os.path.abspath(file_name))
 
 def update_errors_in_view(view):
     file_name = view.file_name()
-    if file_name != None:
+    if file_name == None:
+        return;
+    if g_show_errors:
         file_name = normalize_path(file_name)
-        regions = [e.get_region(view) for e in global_errors if e.file_name == file_name]
+        regions = [e.get_region(view) for e in g_errors if e.file_name == file_name]
         view.add_regions(REGION_KEY, regions, REGION_SCOPE)
+    else:
+        view.erase_regions(REGION_KEY)
+
+def update_all_views(window):
+    for view in window.views():
+        update_errors_in_view(view)
 
 def remove_errors_in_view(view):
     view.erase_regions(REGION_KEY)
@@ -76,8 +85,30 @@ class ExecCommand(defaultExec.ExecCommand):
         error_pattern = self.output_view.settings().get("result_file_regex")
         error_parser = ErrorParser(error_pattern)
 
-        global global_errors
-        global_errors = error_parser.parse(output)
+        global g_errors
+        g_errors = error_parser.parse(output)
 
-        for view in self.window.views():
-            update_errors_in_view(view)
+        update_all_views(self.window)
+
+
+class HideBuildErrorsCommand(sublime_plugin.WindowCommand):
+
+    def is_enabled(self):
+        return g_show_errors
+
+    def run(self):
+        global g_show_errors
+        g_show_errors = False
+        update_all_views(self.window)
+
+
+
+class ShowBuildErrorsCommand(sublime_plugin.WindowCommand):
+
+    def is_enabled(self):
+        return not g_show_errors
+
+    def run(self):
+        global g_show_errors
+        g_show_errors = True
+        update_all_views(self.window)

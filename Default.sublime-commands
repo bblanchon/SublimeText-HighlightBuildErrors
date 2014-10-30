@@ -1,0 +1,4 @@
+[
+    { "caption": "Highlight Build Errors: Hide build errors", "command": "hide_build_errors" },
+    { "caption": "Highlight Build Errors: Show build errors", "command": "show_build_errors" }
+]
