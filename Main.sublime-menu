@@ -1,0 +1,38 @@
+[
+    {
+        "id": "preferences",
+        "mnemonic": "n",
+        "id": "preferences",
+        "children":
+        [
+            {
+                "caption": "Package Settings",
+                "mnemonic": "P",
+                "id": "package-settings",
+                "children":
+                [
+                    {
+                        "caption": "Highlight Build Errors",
+                        "children":
+                        [                            
+                            {
+                                "command": "open_file",
+                                "args": {
+                                    "file": "${packages}/HighlightBuildErrors/HighlightBuildErrors.sublime-settings"
+                                },
+                                "caption": "Settings - Default"
+                            },
+                            {
+                                "command": "open_file",
+                                "args": {
+                                    "file": "${packages}/User/HighlightBuildErrors.sublime-settings"
+                                },
+                                "caption": "Settings - User"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

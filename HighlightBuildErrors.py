@@ -3,8 +3,8 @@ import importlib
 import re
 import os
 
+SETTINGS_FILE = "HighlightBuildErrors.sublime-settings"
 REGION_KEY = "build_errors"
-REGION_SCOPE = "invalid"
 
 try:
     defaultExec = importlib.import_module("Better Build System").BetterBuidSystem
@@ -13,6 +13,17 @@ except:
 
 g_errors = {}
 g_show_errors = True
+g_error_color = "invalid"
+
+def plugin_loaded():    
+    settings = sublime.load_settings(SETTINGS_FILE)
+    settings.add_on_change("error_color", update_error_color)
+    update_error_color()
+
+def update_error_color():
+    global g_error_color
+    settings = sublime.load_settings(SETTINGS_FILE)
+    g_error_color = settings.get("error_color", "invalid")
 
 def normalize_path(file_name):
     return os.path.normcase(os.path.abspath(file_name))
@@ -24,7 +35,7 @@ def update_errors_in_view(view):
     if g_show_errors:
         file_name = normalize_path(file_name)
         regions = [e.get_region(view) for e in g_errors if e.file_name == file_name]
-        view.add_regions(REGION_KEY, regions, REGION_SCOPE)
+        view.add_regions(REGION_KEY, regions, g_error_color)
     else:
         view.erase_regions(REGION_KEY)
 
