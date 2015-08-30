@@ -11,6 +11,11 @@ try:
 except:
     defaultExec = importlib.import_module("Default.exec")
 
+try:
+    ansiEscape = importlib.import_module("ANSIescape").ansi
+except:
+    pass
+
 g_errors = {}
 g_show_errors = True
 g_error_color = "invalid"
@@ -86,12 +91,7 @@ class ErrorParser:
     def parse(self, text):
         return [ErrorLine(m) for m in self.regex.finditer(text)]
 
-class ExecCommand(defaultExec.ExecCommand):
-
-    def finish(self, proc):
-
-        super(ExecCommand, self).finish(proc)
-
+def doHighlighting(self):
         output = self.output_view.substr(sublime.Region(0, self.output_view.size()))
         error_pattern = self.output_view.settings().get("result_file_regex")
         error_parser = ErrorParser(error_pattern)
@@ -101,6 +101,20 @@ class ExecCommand(defaultExec.ExecCommand):
 
         update_all_views(self.window)
 
+class ExecCommand(defaultExec.ExecCommand):
+
+    def finish(self, proc):
+        super(ExecCommand, self).finish(proc)
+        doHighlighting(self)
+
+try:
+    class AnsiColorBuildCommand(ansiEscape.AnsiColorBuildCommand):
+
+        def finish(self, proc):
+            super(AnsiColorBuildCommand, self).finish(proc)
+            doHighlighting(self)
+except:
+    pass
 
 class HideBuildErrorsCommand(sublime_plugin.WindowCommand):
 
