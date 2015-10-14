@@ -4,7 +4,7 @@ import re
 import os
 
 SETTINGS_FILE = "HighlightBuildErrors.sublime-settings"
-REGION_KEY = "build_errors"
+REGION_KEY = "build_errors_"
 
 try:
     defaultExec = importlib.import_module("Better Build System").BetterBuidSystem
@@ -18,38 +18,47 @@ except:
 
 g_errors = {}
 g_show_errors = True
-g_error_color = "invalid"
+g_error_colors = {"error":"invalid"}
 
 def plugin_loaded():    
     settings = sublime.load_settings(SETTINGS_FILE)
     settings.add_on_change("error_color", update_error_color)
+    settings.add_on_change("error_colors", update_error_color)
     update_error_color()
 
 def update_error_color():
-    global g_error_color
+    global g_error_colors
     settings = sublime.load_settings(SETTINGS_FILE)
-    g_error_color = settings.get("error_color", "invalid")
+    g_error_colors = settings.get("error_colors", {"error":settings.get("error_color","invalid")})
 
 def normalize_path(file_name):
     return os.path.normcase(os.path.abspath(file_name))
 
 def update_errors_in_view(view):
     file_name = view.file_name()
-    if file_name == None:
-        return;
+    if file_name is None:
+        return
     if g_show_errors:
         file_name = normalize_path(file_name)
-        regions = [e.get_region(view) for e in g_errors if e.file_name == file_name]
-        view.add_regions(REGION_KEY, regions, g_error_color)
+        regions = {}
+        for e in g_errors:
+            if e.file_name != file_name: continue
+            if e.error_type not in regions:
+                regions[e.error_type] = []
+            regions[e.error_type].append(e.get_region(view))
+        for reg in regions.keys():
+            view.add_regions(REGION_KEY+reg, regions[reg], g_error_colors.get(reg,"invalid"))
     else:
-        view.erase_regions(REGION_KEY)
+        for reg in g_error_colors.keys():
+            view.erase_regions(REGION_KEY+reg)
 
 def update_all_views(window):
     for view in window.views():
         update_errors_in_view(view)
 
 def remove_errors_in_view(view):
-    view.erase_regions(REGION_KEY)
+    for reg in g_error_colors.keys():
+        view.erase_regions(REGION_KEY+reg)
 
 class ViewEventListener(sublime_plugin.EventListener):
     def on_load_async(self, view):
@@ -70,11 +79,20 @@ class ErrorLine:
             self.column = int(matchObject.group(3))
         except:
             self.column = None
+        try:
+            self.error_type    = matchObject.group(4).strip()
+            self.error_message = matchObject.group(5)
+
+            if len(self.error_message) == 0:
+                raise "no type use error"
+        except:
+            self.error_type = "error"
+            self.error_message = matchObject.group(4)
 
     def get_region(self, view):
-        if self.line == None:
-            return None;
-        if self.column == None:
+        if self.line is None:
+            return None
+        if self.column is None:
             point = view.text_point(self.line-1, 0)
             return view.full_line(point)
         point = view.text_point(self.line-1, self.column-1)

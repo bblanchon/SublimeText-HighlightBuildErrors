@@ -1,3 +1,8 @@
 {
-	"error_color": "invalid"
+	"error_color": "invalid",
+	"error_colors": {
+		 "error":"invalid.illegal",
+		 "warning":"invalid",
+		 "note":"invalid.deprecated"
+	}
 }
