@@ -1,8 +1,13 @@
 {
-	"error_color": "invalid",
-	"error_colors": {
-		 "error":"invalid.illegal",
-		 "warning":"invalid",
-		 "note":"invalid.deprecated"
-	}
+    "default_color":"invalid",
+    "colors":{
+    "warning":{
+      "regex": ".* warning:.*",
+      "color": "sublimelinter.mark.warning"
+    },
+    "error":{
+      "regex": ".* error:.*",
+      "color": "sublimelinter.mark.error"
+    }
+  }
 }

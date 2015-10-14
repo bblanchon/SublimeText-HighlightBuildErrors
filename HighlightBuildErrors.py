@@ -18,18 +18,20 @@ except:
 
 g_errors = {}
 g_show_errors = True
-g_error_colors = {"error":"invalid"}
+g_error_color = "invalid"
+g_error_colors = {"error" : {"regexp" : ".*", "color" : "invalid"}}
 
 def plugin_loaded():    
     settings = sublime.load_settings(SETTINGS_FILE)
-    settings.add_on_change("error_color", update_error_color)
-    settings.add_on_change("error_colors", update_error_color)
+    settings.add_on_change("default_color", update_error_color)
+    settings.add_on_change("colors", update_error_color)
     update_error_color()
 
 def update_error_color():
-    global g_error_colors
+    global g_error_colors, g_error_color
     settings = sublime.load_settings(SETTINGS_FILE)
-    g_error_colors = settings.get("error_colors", {"error":settings.get("error_color","invalid")})
+    g_error_color = settings.get("default_color","invalid")
+    g_error_colors = settings.get("colors", {"error" : {"regexp" : ".*", "color" : g_error_color}})
 
 def normalize_path(file_name):
     return os.path.normcase(os.path.abspath(file_name))
@@ -47,7 +49,7 @@ def update_errors_in_view(view):
                 regions[e.error_type] = []
             regions[e.error_type].append(e.get_region(view))
         for reg in regions.keys():
-            view.add_regions(REGION_KEY+reg, regions[reg], g_error_colors.get(reg,"invalid"))
+            view.add_regions(REGION_KEY+reg, regions[reg], g_error_colors.get(reg,"error").get("color",g_error_color))
     else:
         for reg in g_error_colors.keys():
             view.erase_regions(REGION_KEY+reg)
@@ -69,6 +71,7 @@ class ViewEventListener(sublime_plugin.EventListener):
 
 class ErrorLine:
     def __init__(self, matchObject):
+        global g_error_colors
         # only keep last line (i've seen a bad regex that capture several lines)
         self.file_name = normalize_path(matchObject.group(1).splitlines()[-1])
         try:
@@ -79,15 +82,14 @@ class ErrorLine:
             self.column = int(matchObject.group(3))
         except:
             self.column = None
+        self.error_message = matchObject.group(4)
         try:
-            self.error_type    = matchObject.group(4).strip()
-            self.error_message = matchObject.group(5)
-
-            if len(self.error_message) == 0:
-                raise "no type use error"
+            for cc in g_error_colors.keys():
+                if re.search(g_error_colors.get(cc).get("regexp",cc), matchObject.group(4)):
+                    self.error_type = cc
+                    break
         except:
             self.error_type = "error"
-            self.error_message = matchObject.group(4)
 
     def get_region(self, view):
         if self.line is None:
