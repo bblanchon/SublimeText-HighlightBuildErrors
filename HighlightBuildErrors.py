@@ -71,20 +71,44 @@ class ViewEventListener(sublime_plugin.EventListener):
     def on_activated_async(self, view):
         update_errors_in_view(view)
 
+def get_filename(matchObject):
+    # only keep last line (i've seen a bad regex that capture several lines)
+    return normalize_path(matchObject.group(1).splitlines()[-1])
+
+def get_line(matchObject):
+    if len(matchObject.groups()) < 3:
+        return None
+    try:
+        return int(matchObject.group(2))
+    except ValueError:
+        return None
+
+def get_column(matchObject):
+    # column is optional, the last one is always the message
+    if len(matchObject.groups()) < 5:
+        return None
+    try:
+        return int(matchObject.group(3))
+    except ValueError:
+        return None
+
+def get_message(matchObject):
+    if len(matchObject.groups()) < 4:
+        return None
+    try:
+        # column is optional, the last one is always the message
+        return int(matchObject.group(len(matchObject.groups())-1))
+    except ValueError:
+        return None
+
 class ErrorLine:
     def __init__(self, matchObject):
         global g_error_colors
         # only keep last line (i've seen a bad regex that capture several lines)
-        self.file_name = normalize_path(matchObject.group(1).splitlines()[-1])
-        try:
-            self.line = int(matchObject.group(2))
-        except:
-            self.line = None
-        try:
-            self.column = int(matchObject.group(3))
-        except:
-            self.column = None
-        self.error_message = matchObject.group(4)
+        self.file_name = get_filename(matchObject);
+        self.line = get_line(matchObject);
+        self.column = get_column(matchObject)
+        self.error_message = get_message(matchObject)
         try:
             for ix, cc in enumerate(g_error_colors):
                 if re.search(cc.get("regexp",cc), matchObject.group(4)):
