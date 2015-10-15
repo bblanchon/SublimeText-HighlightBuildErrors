@@ -18,8 +18,7 @@ except:
 
 g_errors = {}
 g_show_errors = True
-g_default_color = "invalid"
-g_colors = [{"regex": "error", "color": "sublimelinter.mark.error"}]
+g_color_configs = []
 
 def plugin_loaded():
     settings = sublime.load_settings(SETTINGS_FILE)
@@ -28,16 +27,18 @@ def plugin_loaded():
     update_error_color()
 
 def update_error_color():
-    global g_colors, g_default_color
+    global g_color_configs, g_default_color
     settings = sublime.load_settings(SETTINGS_FILE)
-    g_default_color = settings.get("default_color","invalid")
-    g_colors = settings.get("colors", [{"regex": ".*", "color" : g_default_color}])
+    g_color_configs = settings.get("colors", [{"color": "sublimelinter.mark.error"}])
+    for config in g_color_configs:
+        if "regex" in config:
+            config["compiled_regex"] = re.compile(config["regex"])
 
 def normalize_path(file_name):
     return os.path.normcase(os.path.abspath(file_name))
 
 def update_errors_in_view(view):
-    global g_colors, g_default_color
+    global g_color_configs, g_default_color
     file_name = view.file_name()
     if file_name is None:
         return
@@ -49,10 +50,10 @@ def update_errors_in_view(view):
             if e.color not in regions:
                 regions[e.color] = []
             regions[e.color].append(e.get_region(view))
-        for color in regions.keys():
+        for color in regions.keys():            
             view.add_regions(REGION_KEY + str(color), regions[color], color)
     else:
-        for idx, val in enumerate(g_colors):
+        for idx, val in enumerate(g_color_configs):
             view.erase_regions(REGION_KEY + str(idx))
 
 def update_all_views(window):
@@ -60,8 +61,8 @@ def update_all_views(window):
         update_errors_in_view(view)
 
 def remove_errors_in_view(view):
-    global g_colors
-    for idx, val in enumerate(g_colors):
+    global g_color_configs
+    for idx, val in enumerate(g_color_configs):
         view.erase_regions(REGION_KEY + str(idx))
 
 class ViewEventListener(sublime_plugin.EventListener):
@@ -100,21 +101,25 @@ def get_message(matchObject):
 
 class ErrorLine:
     def __init__(self, matchObject):
-        global g_colors
+        global g_color_configs
         # only keep last line (i've seen a bad regex that capture several lines)
         self.file_name = get_filename(matchObject);
         self.line = get_line(matchObject);
         self.column = get_column(matchObject)
         self.message = get_message(matchObject)
-        self.color = g_default_color
-        #print("Message = ",self.message)
-        if self.message != None:
-            for config in g_colors:
-                #print("Test",config["regex"])
-                if re.search(config["regex"], self.message):
-                    self.color = config["color"]
-                    #print("Match! Use color", self.color)
-                    break
+        self.color = "invalid"
+        if self.message == None: return
+        print(self.message)
+        for config in g_color_configs:
+            if not "compiled_regex" in config:
+                self.color = config["color"]
+                print("Use default color: ", self.color)
+                break
+            print("Test",config["regex"])
+            if config["compiled_regex"].search(self.message):
+                self.color = config["color"]
+                print("Match! Use color: ", self.color)
+                break
 
     def get_region(self, view):
         if self.line is None:
