@@ -87,19 +87,21 @@ class ErrorLine:
 class ErrorParser:
     def __init__(self, pattern):
         self.regex = re.compile(pattern, re.MULTILINE)
+        if self.regex.groups < 3 or self.regex.groups > 4:
+            raise AssertionError("regex must capture filename,line,[column,]message")
 
     def parse(self, text):
         return [ErrorLine(m) for m in self.regex.finditer(text)]
 
 def doHighlighting(self):
-        output = self.output_view.substr(sublime.Region(0, self.output_view.size()))
-        error_pattern = self.output_view.settings().get("result_file_regex")
-        error_parser = ErrorParser(error_pattern)
+    output = self.output_view.substr(sublime.Region(0, self.output_view.size()))
+    error_pattern = self.output_view.settings().get("result_file_regex")
+    error_parser = ErrorParser(error_pattern)
 
-        global g_errors
-        g_errors = error_parser.parse(output)
+    global g_errors
+    g_errors = error_parser.parse(output)
 
-        update_all_views(self.window)
+    update_all_views(self.window)
 
 class ExecCommand(defaultExec.ExecCommand):
 
