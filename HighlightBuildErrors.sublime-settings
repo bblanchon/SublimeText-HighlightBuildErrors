@@ -3,11 +3,11 @@
   "colors": [
     {
       "regex": "(warning|note)",
-      "color": "sublimelinter.mark.warning"
+      "scope": "sublimelinter.mark.warning"
     },
     {
       // default color, when none of the above matches
-      "color": "sublimelinter.mark.error"
+      "scope": "sublimelinter.mark.error"
     }
   ]
 }

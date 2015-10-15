@@ -4,7 +4,7 @@ import re
 import os
 
 SETTINGS_FILE = "HighlightBuildErrors.sublime-settings"
-REGION_KEY = "build_errors_color"
+REGION_KEY_PREFIX = "build_errors_color"
 
 try:
     defaultExec = importlib.import_module("Better Build System").BetterBuidSystem
@@ -42,19 +42,19 @@ def update_errors_in_view(view):
     file_name = view.file_name()
     if file_name is None:
         return
-    if g_show_errors:
-        file_name = normalize_path(file_name)
-        regions = {}
-        for e in g_errors:
-            if e.file_name != file_name: continue
-            if e.color not in regions:
-                regions[e.color] = []
-            regions[e.color].append(e.get_region(view))
-        for color in regions.keys():            
-            view.add_regions(REGION_KEY + str(color), regions[color], color)
-    else:
-        for idx, val in enumerate(g_color_configs):
-            view.erase_regions(REGION_KEY + str(idx))
+    file_name = normalize_path(file_name)        
+    for idx, config in enumerate(g_color_configs):
+        region_key = REGION_KEY_PREFIX + str(idx)
+        scope = config["scope"] if "scope" in config else None
+        icon = config["icon"] if "icon" in config else None
+        if g_show_errors:
+            regions = [e.get_region(view) for e in g_errors if e.file_name == file_name and e.color_index == idx]
+            if icon:
+                view.add_regions(region_key, regions, scope, icon)
+            else:
+                view.add_regions(region_key, regions, scope)
+        else:
+            view.erase_regions(region_key)
 
 def update_all_views(window):
     for view in window.views():
@@ -63,7 +63,7 @@ def update_all_views(window):
 def remove_errors_in_view(view):
     global g_color_configs
     for idx, val in enumerate(g_color_configs):
-        view.erase_regions(REGION_KEY + str(idx))
+        view.erase_regions(REGION_KEY_PREFIX + str(idx))
 
 class ViewEventListener(sublime_plugin.EventListener):
     def on_load_async(self, view):
@@ -107,19 +107,14 @@ class ErrorLine:
         self.line = get_line(matchObject);
         self.column = get_column(matchObject)
         self.message = get_message(matchObject)
-        self.color = "invalid"
         if self.message == None: return
-        print(self.message)
+        self.color_index = 0
         for config in g_color_configs:
             if not "compiled_regex" in config:
-                self.color = config["color"]
-                print("Use default color: ", self.color)
                 break
-            print("Test",config["regex"])
             if config["compiled_regex"].search(self.message):
-                self.color = config["color"]
-                print("Match! Use color: ", self.color)
                 break
+            self.color_index = self.color_index+1;
 
     def get_region(self, view):
         if self.line is None:
