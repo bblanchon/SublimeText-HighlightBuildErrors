@@ -1,11 +1,9 @@
 {
-    "default_color":"invalid",
-    "colors":[{
-      "regex": ".* warning:.*",
+  "default_color": "sublimelinter.mark.error",
+  "colors": [
+    {
+      "regex": "warning:",
       "color": "sublimelinter.mark.warning"
-    },{
-      "regex": ".* error:.*",
-      "color": "sublimelinter.mark.error"
     }
   ]
 }

@@ -18,8 +18,8 @@ except:
 
 g_errors = {}
 g_show_errors = True
-g_error_color = "invalid"
-g_error_colors = [{"regexp" : ".*", "color" : "invalid"}]
+g_default_color = "invalid"
+g_colors = [{"regex": "error", "color": "sublimelinter.mark.error"}]
 
 def plugin_loaded():
     settings = sublime.load_settings(SETTINGS_FILE)
@@ -28,16 +28,16 @@ def plugin_loaded():
     update_error_color()
 
 def update_error_color():
-    global g_error_colors, g_error_color
+    global g_colors, g_default_color
     settings = sublime.load_settings(SETTINGS_FILE)
-    g_error_color = settings.get("default_color","invalid")
-    g_error_colors = settings.get("colors", [{"regexp" : ".*", "color" : g_error_color}])
+    g_default_color = settings.get("default_color","invalid")
+    g_colors = settings.get("colors", [{"regex": ".*", "color" : g_default_color}])
 
 def normalize_path(file_name):
     return os.path.normcase(os.path.abspath(file_name))
 
 def update_errors_in_view(view):
-    global g_error_colors, g_error_color
+    global g_colors, g_default_color
     file_name = view.file_name()
     if file_name is None:
         return
@@ -46,13 +46,13 @@ def update_errors_in_view(view):
         regions = {}
         for e in g_errors:
             if e.file_name != file_name: continue
-            if e.error_type not in regions:
-                regions[e.error_type] = []
-            regions[e.error_type].append(e.get_region(view))
-        for reg in regions.keys():
-            view.add_regions(REGION_KEY + str(reg), regions[reg], g_error_colors[reg].get("color",g_error_color))
+            if e.color not in regions:
+                regions[e.color] = []
+            regions[e.color].append(e.get_region(view))
+        for color in regions.keys():
+            view.add_regions(REGION_KEY + str(color), regions[color], color)
     else:
-        for idx, val in enumerate(g_error_colors):
+        for idx, val in enumerate(g_colors):
             view.erase_regions(REGION_KEY + str(idx))
 
 def update_all_views(window):
@@ -60,8 +60,8 @@ def update_all_views(window):
         update_errors_in_view(view)
 
 def remove_errors_in_view(view):
-    global g_error_colors
-    for idx, val in enumerate(g_error_colors):
+    global g_colors
+    for idx, val in enumerate(g_colors):
         view.erase_regions(REGION_KEY + str(idx))
 
 class ViewEventListener(sublime_plugin.EventListener):
@@ -85,7 +85,7 @@ def get_line(matchObject):
 
 def get_column(matchObject):
     # column is optional, the last one is always the message
-    if len(matchObject.groups()) < 5:
+    if len(matchObject.groups()) < 4:
         return None
     try:
         return int(matchObject.group(3))
@@ -93,29 +93,28 @@ def get_column(matchObject):
         return None
 
 def get_message(matchObject):
-    if len(matchObject.groups()) < 4:
+    if len(matchObject.groups()) < 3:
         return None
-    try:
-        # column is optional, the last one is always the message
-        return int(matchObject.group(len(matchObject.groups())-1))
-    except ValueError:
-        return None
+    # column is optional, the last one is always the message
+    return matchObject.group(len(matchObject.groups()))
 
 class ErrorLine:
     def __init__(self, matchObject):
-        global g_error_colors
+        global g_colors
         # only keep last line (i've seen a bad regex that capture several lines)
         self.file_name = get_filename(matchObject);
         self.line = get_line(matchObject);
         self.column = get_column(matchObject)
-        self.error_message = get_message(matchObject)
-        try:
-            for ix, cc in enumerate(g_error_colors):
-                if re.search(cc.get("regexp",cc), matchObject.group(4)):
-                    self.error_type = ix
+        self.message = get_message(matchObject)
+        self.color = g_default_color
+        #print("Message = ",self.message)
+        if self.message != None:
+            for config in g_colors:
+                #print("Test",config["regex"])
+                if re.search(config["regex"], self.message):
+                    self.color = config["color"]
+                    #print("Match! Use color", self.color)
                     break
-        except:
-            self.error_type = 0
 
     def get_region(self, view):
         if self.line is None:
