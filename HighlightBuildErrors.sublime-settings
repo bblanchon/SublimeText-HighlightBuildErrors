@@ -1,13 +1,17 @@
 {
   // the plugin tests each regex and stops at the first match
+  // "scope" is a key in the .tmTheme file
+  // "display" can be "fill", "outline", "solid_underline", "stippled_underline" or "squiggly_underline"
   "colors": [
     {
       "regex": "(warning|note)",
-      "scope": "sublimelinter.mark.warning"
+      "scope": "invalid",
+      "display": "outline"
     },
     {
       // default color, when none of the above matches
-      "scope": "invalid"
+      "scope": "invalid",
+      "display": "fill"
     }
   ]
 }
