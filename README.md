@@ -23,3 +23,8 @@ That's all. There are no settings.
 Build as usual (Ctrl-B or Cmd-B).
 
 Erroneous words or lines will be highlighted in the source files.
+
+## Contributors
+
+* Matthew Twomey
+* Marcin Tolysz

@@ -1,3 +1,13 @@
 {
-	"error_color": "invalid"
+  // the plugin tests each regex and stops at the first match
+  "colors": [
+    {
+      "regex": "(warning|note)",
+      "scope": "sublimelinter.mark.warning"
+    },
+    {
+      // default color, when none of the above matches
+      "scope": "invalid"
+    }
+  ]
 }

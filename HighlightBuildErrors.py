@@ -4,7 +4,7 @@ import re
 import os
 
 SETTINGS_FILE = "HighlightBuildErrors.sublime-settings"
-REGION_KEY = "build_errors"
+REGION_KEY_PREFIX = "build_errors_color"
 
 try:
     defaultExec = importlib.import_module("Better Build System").BetterBuidSystem
@@ -18,38 +18,52 @@ except:
 
 g_errors = {}
 g_show_errors = True
-g_error_color = "invalid"
+g_color_configs = []
 
-def plugin_loaded():    
+def plugin_loaded():
     settings = sublime.load_settings(SETTINGS_FILE)
-    settings.add_on_change("error_color", update_error_color)
+    settings.add_on_change("default_color", update_error_color)
+    settings.add_on_change("colors", update_error_color)
     update_error_color()
 
 def update_error_color():
-    global g_error_color
+    global g_color_configs, g_default_color
     settings = sublime.load_settings(SETTINGS_FILE)
-    g_error_color = settings.get("error_color", "invalid")
+    g_color_configs = settings.get("colors", [{"color": "sublimelinter.mark.error"}])
+    for config in g_color_configs:
+        if "regex" in config:
+            config["compiled_regex"] = re.compile(config["regex"])
 
 def normalize_path(file_name):
     return os.path.normcase(os.path.abspath(file_name))
 
 def update_errors_in_view(view):
+    global g_color_configs, g_default_color
     file_name = view.file_name()
-    if file_name == None:
-        return;
-    if g_show_errors:
-        file_name = normalize_path(file_name)
-        regions = [e.get_region(view) for e in g_errors if e.file_name == file_name]
-        view.add_regions(REGION_KEY, regions, g_error_color)
-    else:
-        view.erase_regions(REGION_KEY)
+    if file_name is None:
+        return
+    file_name = normalize_path(file_name)        
+    for idx, config in enumerate(g_color_configs):
+        region_key = REGION_KEY_PREFIX + str(idx)
+        scope = config["scope"] if "scope" in config else None
+        icon = config["icon"] if "icon" in config else None
+        if g_show_errors:
+            regions = [e.get_region(view) for e in g_errors if e.file_name == file_name and e.color_index == idx]
+            if icon:
+                view.add_regions(region_key, regions, scope, icon)
+            else:
+                view.add_regions(region_key, regions, scope)
+        else:
+            view.erase_regions(region_key)
 
 def update_all_views(window):
     for view in window.views():
         update_errors_in_view(view)
 
 def remove_errors_in_view(view):
-    view.erase_regions(REGION_KEY)
+    global g_color_configs
+    for idx, val in enumerate(g_color_configs):
+        view.erase_regions(REGION_KEY_PREFIX + str(idx))
 
 class ViewEventListener(sublime_plugin.EventListener):
     def on_load_async(self, view):
@@ -58,23 +72,54 @@ class ViewEventListener(sublime_plugin.EventListener):
     def on_activated_async(self, view):
         update_errors_in_view(view)
 
+def get_filename(matchObject):
+    # only keep last line (i've seen a bad regex that capture several lines)
+    return normalize_path(matchObject.group(1).splitlines()[-1])
+
+def get_line(matchObject):
+    if len(matchObject.groups()) < 3:
+        return None
+    try:
+        return int(matchObject.group(2))
+    except ValueError:
+        return None
+
+def get_column(matchObject):
+    # column is optional, the last one is always the message
+    if len(matchObject.groups()) < 4:
+        return None
+    try:
+        return int(matchObject.group(3))
+    except ValueError:
+        return None
+
+def get_message(matchObject):
+    if len(matchObject.groups()) < 3:
+        return None
+    # column is optional, the last one is always the message
+    return matchObject.group(len(matchObject.groups()))
+
 class ErrorLine:
     def __init__(self, matchObject):
+        global g_color_configs
         # only keep last line (i've seen a bad regex that capture several lines)
-        self.file_name = normalize_path(matchObject.group(1).splitlines()[-1])
-        try:
-            self.line = int(matchObject.group(2))
-        except:
-            self.line = None
-        try:
-            self.column = int(matchObject.group(3))
-        except:
-            self.column = None
+        self.file_name = get_filename(matchObject);
+        self.line = get_line(matchObject);
+        self.column = get_column(matchObject)
+        self.message = get_message(matchObject)
+        if self.message == None: return
+        self.color_index = 0
+        for config in g_color_configs:
+            if not "compiled_regex" in config:
+                break
+            if config["compiled_regex"].search(self.message):
+                break
+            self.color_index = self.color_index+1;
 
     def get_region(self, view):
-        if self.line == None:
-            return None;
-        if self.column == None:
+        if self.line is None:
+            return None
+        if self.column is None:
             point = view.text_point(self.line-1, 0)
             return view.full_line(point)
         point = view.text_point(self.line-1, self.column-1)
@@ -87,19 +132,21 @@ class ErrorLine:
 class ErrorParser:
     def __init__(self, pattern):
         self.regex = re.compile(pattern, re.MULTILINE)
+        if self.regex.groups < 3 or self.regex.groups > 4:
+            raise AssertionError("regex must capture filename,line,[column,]message")
 
     def parse(self, text):
         return [ErrorLine(m) for m in self.regex.finditer(text)]
 
 def doHighlighting(self):
-        output = self.output_view.substr(sublime.Region(0, self.output_view.size()))
-        error_pattern = self.output_view.settings().get("result_file_regex")
-        error_parser = ErrorParser(error_pattern)
+    output = self.output_view.substr(sublime.Region(0, self.output_view.size()))
+    error_pattern = self.output_view.settings().get("result_file_regex")
+    error_parser = ErrorParser(error_pattern)
 
-        global g_errors
-        g_errors = error_parser.parse(output)
+    global g_errors
+    g_errors = error_parser.parse(output)
 
-        update_all_views(self.window)
+    update_all_views(self.window)
 
 class ExecCommand(defaultExec.ExecCommand):
 
