@@ -6,6 +6,7 @@ import os
 SETTINGS_FILE = "HighlightBuildErrors.sublime-settings"
 REGION_KEY_PREFIX = "build_errors_color"
 REGION_FLAGS = {
+    "none": sublime.HIDDEN,
     "fill": 0,
     "outline": sublime.DRAW_NO_FILL,
     "solid_underline": sublime.DRAW_NO_FILL|sublime.DRAW_NO_OUTLINE|sublime.DRAW_SOLID_UNDERLINE,
@@ -52,9 +53,10 @@ def update_errors_in_view(view):
     file_name = normalize_path(file_name)        
     for idx, config in enumerate(g_color_configs):
         region_key = REGION_KEY_PREFIX + str(idx)
-        scope = config["scope"] if "scope" in config else None
+        scope = config["scope"] if "scope" in config else "invalid"
         icon = config["icon"] if "icon" in config else ""
-        display = config["display"] if "display" in config else "fill"
+        default_display = "fill" if "scope" in config else "none"
+        display = config["display"] if "display" in config else default_display
         if g_show_errors:
             regions = [e.get_region(view) for e in g_errors if e.file_name == file_name and e.color_index == idx]
             view.add_regions(region_key, regions, scope, icon, REGION_FLAGS[display])

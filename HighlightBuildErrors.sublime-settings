@@ -3,15 +3,21 @@
   // "scope" is a key in the .tmTheme file
   // "display" can be "fill", "outline", "solid_underline", "stippled_underline" or "squiggly_underline"
   "colors": [
+   {
+      "regex": "note",
+      "icon": "Packages/HighlightBuildErrors/information.png"
+    },
     {
-      "regex": "(warning|note)",
+      "regex": "warning",
       "scope": "invalid",
-      "display": "outline"
+      "display": "outline",
+      "icon": "Packages/HighlightBuildErrors/warning.png"
     },
     {
       // default color, when none of the above matches
       "scope": "invalid",
-      "display": "fill"
+      "display": "fill",
+      "icon": "Packages/HighlightBuildErrors/error.png"
     }
   ]
 }

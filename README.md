@@ -9,7 +9,7 @@ A plugin for [Sublime Text 3](http://www.sublimetext.com/) that highlights the l
 
 * Does only one thing: highlights the erroneous lines after a build
 * Highlights are visible in the mini-map
-* Don't add anything in the gutter (so you can still use [GitGutter](https://sublime.wbond.net/packages/GitGutter) for instance)
+* Customizable display (fill, outline, underline, icon...)
 * Works fine with [Better Build System](https://sublime.wbond.net/packages/Better%20Build%20System)
 
 ## Installation
@@ -28,3 +28,7 @@ Erroneous words or lines will be highlighted in the source files.
 
 * Matthew Twomey
 * Marcin Tolysz
+
+## Credits
+
+* [Icons from famfamfam.com](http://www.famfamfam.com/lab/icons/silk/)
