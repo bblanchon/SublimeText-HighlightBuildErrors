@@ -5,19 +5,19 @@
   "colors": [
    {
       "regex": "note",
-      "icon": "Packages/HighlightBuildErrors/information.png"
+      "icon": "Packages/Highlight Build Errors/information.png"
     },
     {
       "regex": "warning",
       "scope": "invalid",
       "display": "outline",
-      "icon": "Packages/HighlightBuildErrors/warning.png"
+      "icon": "Packages/Highlight Build Errors/warning.png"
     },
     {
       // default color, when none of the above matches
       "scope": "invalid",
       "display": "fill",
-      "icon": "Packages/HighlightBuildErrors/error.png"
+      "icon": "Packages/Highlight Build Errors/error.png"
     }
   ]
 }

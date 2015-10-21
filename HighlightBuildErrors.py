@@ -30,11 +30,10 @@ g_color_configs = []
 
 def plugin_loaded():
     settings = sublime.load_settings(SETTINGS_FILE)
-    settings.add_on_change("default_color", update_error_color)
-    settings.add_on_change("colors", update_error_color)
-    update_error_color()
+    settings.add_on_change("colors", load_config)
+    load_config()
 
-def update_error_color():
+def load_config():
     global g_color_configs, g_default_color
     settings = sublime.load_settings(SETTINGS_FILE)
     g_color_configs = settings.get("colors", [{"color": "sublimelinter.mark.error"}])
