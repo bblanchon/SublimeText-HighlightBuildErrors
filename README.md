@@ -20,7 +20,7 @@ That's all. There are no settings.
 
 ## Usage
 
-Build as usual (Ctrl-B or Cmd-B).
+Build as usual (<kbd>Ctrl</kbd>+<kbd>B</kbd> or <kbd>Cmd</kbd>+<kbd>B</kbd>).
 
 Erroneous words or lines will be highlighted in the source files.
 
