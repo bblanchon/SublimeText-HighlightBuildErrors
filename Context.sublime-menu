@@ -1,0 +1,7 @@
+[
+    {
+        "id" : "highlight_build_errors",
+        "caption" : "Show Error Message",
+        "command" : "show_error_message"
+    }
+]

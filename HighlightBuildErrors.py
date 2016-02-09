@@ -13,6 +13,7 @@ REGION_FLAGS = {
     "stippled_underline":  sublime.DRAW_NO_FILL|sublime.DRAW_NO_OUTLINE|sublime.DRAW_STIPPLED_UNDERLINE,
     "squiggly_underline":  sublime.DRAW_NO_FILL|sublime.DRAW_NO_OUTLINE|sublime.DRAW_SQUIGGLY_UNDERLINE
 }
+STATUS_MESSAGE_KEY = "highlight_build_errors:message"
 
 try:
     defaultExec = importlib.import_module("Better Build System").BetterBuidSystem
@@ -26,6 +27,7 @@ except:
 
 g_errors = {}
 g_show_errors = True
+g_auto_show_messages = True
 g_color_configs = []
 
 def plugin_loaded():
@@ -44,12 +46,29 @@ def load_config():
 def normalize_path(file_name):
     return os.path.normcase(os.path.abspath(file_name))
 
-def update_errors_in_view(view):
-    global g_color_configs, g_default_color
+def get_file_name_from_view(view):
     file_name = view.file_name()
     if file_name is None:
+        return None
+    return normalize_path(file_name)
+
+# displays popup with message for the error the selector is currently on
+def show_error_popup(view):
+    selected_error = get_selected_error(view)
+    if selected_error is not None:
+        view.set_status(STATUS_MESSAGE_KEY, selected_error.message)
+        view.show_popup(selected_error.message)
+
+def get_selected_error(view):
+    file_name = get_file_name_from_view(view)
+    return next((e for e in g_errors if e.file_name == file_name and e.get_region(view).contains(view.sel()[0])), None)
+
+def update_errors_in_view(view):
+    global g_color_configs, g_default_color
+    file_name = get_file_name_from_view(view)
+    if file_name is None:
         return
-    file_name = normalize_path(file_name)        
+
     for idx, config in enumerate(g_color_configs):
         region_key = REGION_KEY_PREFIX + str(idx)
         scope = config["scope"] if "scope" in config else "invalid"
@@ -78,6 +97,11 @@ class ViewEventListener(sublime_plugin.EventListener):
     def on_activated_async(self, view):
         update_errors_in_view(view)
 
+    def on_selection_modified(self, view):
+        view.erase_status(STATUS_MESSAGE_KEY)
+        if g_auto_show_messages:
+            show_error_popup(view)
+
 def get_filename(matchObject):
     # only keep last line (i've seen a bad regex that capture several lines)
     return normalize_path(matchObject.group(1).splitlines()[-1])
@@ -104,6 +128,7 @@ def get_message(matchObject):
         return None
     # column is optional, the last one is always the message
     return matchObject.group(len(matchObject.groups()))
+
 
 class ErrorLine:
     def __init__(self, matchObject):
@@ -135,6 +160,7 @@ class ErrorLine:
         else:
             return view.full_line(point)
 
+
 class ErrorParser:
     def __init__(self, pattern):
         self.regex = re.compile(pattern, re.MULTILINE)
@@ -154,6 +180,7 @@ def doHighlighting(self):
 
     update_all_views(self.window)
 
+
 class ExecCommand(defaultExec.ExecCommand):
 
     def finish(self, proc):
@@ -169,6 +196,7 @@ try:
 except:
     pass
 
+
 class HideBuildErrorsCommand(sublime_plugin.WindowCommand):
 
     def is_enabled(self):
@@ -180,7 +208,6 @@ class HideBuildErrorsCommand(sublime_plugin.WindowCommand):
         update_all_views(self.window)
 
 
-
 class ShowBuildErrorsCommand(sublime_plugin.WindowCommand):
 
     def is_enabled(self):
@@ -190,3 +217,32 @@ class ShowBuildErrorsCommand(sublime_plugin.WindowCommand):
         global g_show_errors
         g_show_errors = True
         update_all_views(self.window)
+
+
+class DisableAutoShowMessagesCommand(sublime_plugin.WindowCommand):
+
+    def is_enabled(self):
+        return g_auto_show_messages
+
+    def run(self):
+        global g_auto_show_messages
+        g_auto_show_messages = False
+
+
+class EnableAutoShowMessagesCommand(sublime_plugin.WindowCommand):
+
+    def is_enabled(self):
+        return not g_auto_show_messages
+
+    def run(self):
+        global g_auto_show_messages
+        g_auto_show_messages = True
+
+
+class ShowErrorMessageCommand(sublime_plugin.WindowCommand):
+
+    def is_visible(self):
+        return not g_auto_show_messages and get_selected_error(self.window.active_view()) != None
+
+    def run(self):
+        show_error_popup(self.window.active_view())
