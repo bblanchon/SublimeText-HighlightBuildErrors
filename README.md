@@ -29,6 +29,7 @@ Erroneous words or lines will be highlighted in the source files.
 
 * Matthew Twomey
 * Marcin Tolysz
+* Connor Clark
 
 ## Credits
 
