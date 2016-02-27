@@ -72,18 +72,18 @@ def show_error_popup(view):
     if selected_error is None:
         return
 
-    message = split_popup_message(selected_error.message)
+    message_split = split_popup_message(selected_error.message)
 
     if g_settings.get("popup_truncate", True):
-        message = g_settings.get("popup_template", "$1") \
-            .replace("$1", message[0])
+        message_formatted = g_settings.get("popup_template", "$1") \
+            .replace("$1", message_split[0])
     else:
-        message = g_settings.get("popup_template_extended", "$1<br>$2") \
-            .replace("$1", message[0]) \
-            .replace("$2", message[1])
+        message_formatted = g_settings.get("popup_template_extended", "$1<br>$2") \
+            .replace("$1", message_split[0]) \
+            .replace("$2", message_split[1])
 
-    view.set_status(STATUS_MESSAGE_KEY, message)
-    view.show_popup(message, max_width = g_settings.get("popup_max_width", 320), \
+    view.set_status(STATUS_MESSAGE_KEY, message_split[0])
+    view.show_popup(message_formatted, max_width = g_settings.get("popup_max_width", 320), \
                              max_height = g_settings.get("popup_max_height", 240))
 
 def get_selected_error(view):
