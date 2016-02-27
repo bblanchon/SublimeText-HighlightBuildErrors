@@ -17,7 +17,38 @@ A plugin for [Sublime Text 3](http://www.sublimetext.com/) that highlights the l
 
 Install this plugin with the [Sublime Text Package Manager](https://sublime.wbond.net/), then restart Sublime Text.
 
-That's all. There are no settings.
+# Configuration
+
+As many Sublime Text plugins, the configuration can be modified from the menu `Preferences / Package Settings / Hightlight Build Errors`.
+
+Here is the content of the default settings file:
+
+```javascript
+{
+  // the plugin tests each regex and stops at the first match
+  // "scope" is a key in the .tmTheme file
+  // "display" can be "fill", "outline", "solid_underline", "stippled_underline" or "squiggly_underline"
+  "colors": [
+   {
+      "regex": "note",
+      "icon": "Packages/Highlight Build Errors/information.png"
+    },
+    {
+      "regex": "warning",
+      "scope": "invalid",
+      "display": "outline",
+      "icon": "Packages/Highlight Build Errors/warning.png"
+    },
+    {
+      // default color, when none of the above matches
+      "scope": "invalid",
+      "display": "fill",
+      "icon": "Packages/Highlight Build Errors/error.png"
+    }
+  ]
+}
+
+``` 
 
 ## Usage
 
