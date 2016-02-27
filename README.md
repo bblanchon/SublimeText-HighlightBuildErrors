@@ -30,6 +30,7 @@ Erroneous words or lines will be highlighted in the source files.
 * Matthew Twomey
 * Marcin Tolysz
 * Connor Clark
+* [Michael Yoo](https://github.com/sekjun9878) <michael@yoo.id.au>
 
 ## Credits
 

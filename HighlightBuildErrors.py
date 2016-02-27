@@ -96,6 +96,11 @@ class ViewEventListener(sublime_plugin.EventListener):
 
     def on_activated_async(self, view):
         update_errors_in_view(view)
+        
+    def on_modified_async(self, view):
+        if not view.is_dirty():
+            # Then most likely just reloaded or saved!
+            update_errors_in_view(view)
 
     def on_selection_modified(self, view):
         view.erase_status(STATUS_MESSAGE_KEY)
