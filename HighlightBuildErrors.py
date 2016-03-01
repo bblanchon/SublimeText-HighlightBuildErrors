@@ -29,6 +29,7 @@ g_errors = {}
 g_show_errors = True
 g_auto_show_messages = True
 g_color_configs = []
+g_settings = sublime.load_settings(SETTINGS_FILE)
 
 def plugin_loaded():
     settings = sublime.load_settings(SETTINGS_FILE)
@@ -36,9 +37,11 @@ def plugin_loaded():
     load_config()
 
 def load_config():
-    global g_color_configs, g_default_color
-    settings = sublime.load_settings(SETTINGS_FILE)
+    global g_color_configs, g_default_color, g_settings
+
+    g_settings = settings = sublime.load_settings(SETTINGS_FILE)
     g_color_configs = settings.get("colors", [{"color": "sublimelinter.mark.error"}])
+
     for config in g_color_configs:
         if "regex" in config:
             config["compiled_regex"] = re.compile(config["regex"])
@@ -52,12 +55,36 @@ def get_file_name_from_view(view):
         return None
     return normalize_path(file_name)
 
+def split_popup_message(message):
+    # return [first_line, rest]
+    # `rest` maybe an empty string, if `message` is single-line.
+    #
+    # Makes sure that both `first_line` and the `rest` are fully trimmed (no newlines at ends)
+    return list(map(
+        lambda x: x.strip(),
+        (message.strip() + "\n").split('\n', 1)) # Make strip() return list[2] even when no trailing \n
+    )
+
 # displays popup with message for the error the selector is currently on
 def show_error_popup(view):
     selected_error = get_selected_error(view)
-    if selected_error is not None:
-        view.set_status(STATUS_MESSAGE_KEY, selected_error.message)
-        view.show_popup(selected_error.message)
+
+    if selected_error is None:
+        return
+
+    message_split = split_popup_message(selected_error.message)
+
+    if g_settings.get("popup_truncate", True):
+        message_formatted = g_settings.get("popup_template", "$1") \
+            .replace("$1", message_split[0])
+    else:
+        message_formatted = g_settings.get("popup_template_extended", "$1<br>$2") \
+            .replace("$1", message_split[0]) \
+            .replace("$2", message_split[1])
+
+    view.set_status(STATUS_MESSAGE_KEY, message_split[0])
+    view.show_popup(message_formatted, max_width = g_settings.get("popup_max_width", 320), \
+                             max_height = g_settings.get("popup_max_height", 240))
 
 def get_selected_error(view):
     file_name = get_file_name_from_view(view)
