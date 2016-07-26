@@ -1,45 +1,23 @@
 {
-    // the plugin tests each regex and stops at the first match
-    // "scope" is a key in the .tmTheme file
-    // "display" can be "fill", "outline", "solid_underline", "stippled_underline" or "squiggly_underline"
-    "colors": [
-        {
-            "regex": "note",
-            "icon": "Packages/Highlight Build Errors/information.png"
-        },
-        {
-            "regex": "warning",
-            "scope": "invalid",
-            "display": "outline",
-            "icon": "Packages/Highlight Build Errors/warning.png"
-        },
-        {
-            // default color, when none of the above matches
-            "scope": "invalid",
-            "display": "fill",
-            "icon": "Packages/Highlight Build Errors/error.png"
-        }
-    ],
-
-    "popup_max_width": 320, // Default Sublime Text 3 API setting
-    "popup_max_height": 240, // Default Sublime Text 3 API setting
-
-    /*
-     * If set to true, will truncate everything after the first newline
-     * and use the setting `popup_template`.
-     *
-     *
-     * If set to false, this will cut the message on the first newline
-     * and store them in different variables ($1 and $2).
-     *
-     * If set to false, will also use `popup_template_extended` instead of
-     * `popup_template`.
-     */
-    "popup_truncate": true,
-
-    // Available variables: $1
-    "popup_template": "$1",
-
-    // Available variables: $1 (first line), $2 (rest)
-    "popup_template_extended": "$1<br>$2",
+  // the plugin tests each regex and stops at the first match
+  // "scope" is a key in the .tmTheme file
+  // "display" can be "fill", "outline", "solid_underline", "stippled_underline" or "squiggly_underline"
+  "colors": [
+   {
+      "regex": "note",
+      "icon": "Packages/Highlight Build Errors/information.png"
+    },
+    {
+      "regex": "warning",
+      "scope": "invalid",
+      "display": "outline",
+      "icon": "Packages/Highlight Build Errors/warning.png"
+    },
+    {
+      // default color, when none of the above matches
+      "scope": "invalid",
+      "display": "fill",
+      "icon": "Packages/Highlight Build Errors/error.png"
+    }
+  ]
 }

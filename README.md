@@ -9,7 +9,6 @@ A plugin for [Sublime Text 3](http://www.sublimetext.com/) that highlights the l
 
 * Does only one thing: highlights the erroneous lines after a build
 * Highlights are visible in the mini-map
-* Moving text cursor displays error message in a popup
 * Customizable display (fill, outline, underline, icon...)
 * Works fine with [Better Build System](https://sublime.wbond.net/packages/Better%20Build%20System)
 
@@ -48,7 +47,7 @@ Here is the content of the default settings file:
   ]
 }
 
-``` 
+```
 
 ## Usage
 
