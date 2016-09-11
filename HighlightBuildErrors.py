@@ -143,11 +143,15 @@ class ErrorLine:
 class ErrorParser:
     def __init__(self, pattern):
         self.regex = re.compile(pattern, re.MULTILINE)
-        if self.regex.groups < 3 or self.regex.groups > 4:
-            raise AssertionError("regex must capture filename,line,[column,]message")
+        self.bad_regex = self.regex.groups < 3 or self.regex.groups > 4
+        if self.bad_regex:
+            print("Highlight Build Errors plugin warning: invalid configuration\nThe regular expression must capture filename,line,[column,]message\nPlease fix the 'file_regex' in build system configuration.")
 
     def parse(self, text):
-        return [ErrorLine(m) for m in self.regex.finditer(text)]
+        if self.bad_regex:
+            return []
+        else:
+            return [ErrorLine(m) for m in self.regex.finditer(text)]
 
 def doHighlighting(self):
     output = self.output_view.substr(sublime.Region(0, self.output_view.size()))
