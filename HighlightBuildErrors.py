@@ -97,7 +97,7 @@ def get_line(matchObject):
 
 def get_column(matchObject):
     # column is optional, the last one is always the message
-    if len(matchObject.groups()) < 4:
+    if len(matchObject.groups()) < 4 or matchObject.group(3) is None:
         return None
     try:
         return int(matchObject.group(3))

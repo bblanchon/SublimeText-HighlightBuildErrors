@@ -61,6 +61,7 @@ Erroneous words or lines will be highlighted in the source files.
 * Marcin Tolysz
 * Connor Clark
 * [Michael Yoo](https://github.com/sekjun9878) <michael@yoo.id.au>
+* Aurelien Grenotton
 
 ## Credits
 
