@@ -83,6 +83,14 @@ class ViewEventListener(sublime_plugin.EventListener):
             # Then most likely just reloaded or saved!
             update_errors_in_view(view)
 
+    def on_window_command(self, window, command, args):
+
+        if command == "build":
+
+            for view in window.views():
+                remove_errors_in_view(view)
+
+
 def get_filename(matchObject):
     # only keep last line (i've seen a bad regex that capture several lines)
     return normalize_path(matchObject.group(1).splitlines()[-1])
