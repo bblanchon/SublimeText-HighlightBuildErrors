@@ -70,6 +70,7 @@ def remove_errors_in_view(view):
     global g_color_configs
     for idx, val in enumerate(g_color_configs):
         view.erase_regions(REGION_KEY_PREFIX + str(idx))
+    g_errors.clear()
 
 class ViewEventListener(sublime_plugin.EventListener):
     def on_load_async(self, view):
@@ -84,9 +85,7 @@ class ViewEventListener(sublime_plugin.EventListener):
             update_errors_in_view(view)
 
     def on_window_command(self, window, command, args):
-
         if command == "build":
-
             for view in window.views():
                 remove_errors_in_view(view)
 
@@ -168,7 +167,6 @@ def doHighlighting(self):
 
     global g_errors
     g_errors = error_parser.parse(output)
-
     update_all_views(self.window)
 
 class ExecCommand(defaultExec.ExecCommand):
